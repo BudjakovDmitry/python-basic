@@ -1,3 +1,4 @@
+import os
 import json
 
 
@@ -132,10 +133,13 @@ def buffer_data_changed():
     with open(STORAGE, 'r') as storage:
         storage_values = json.load(storage)
 
-    if storage_values.keys() != contacts_buffer.keys():
+    storage_ids = list(map(int, storage_values.keys()))
+    buffer_keys = list(contacts_buffer.keys())
+    if sorted(storage_ids) != sorted(buffer_keys):
         return True
 
     for contact_id, buffer_value in contacts_buffer.items():
+        contact_id = str(contact_id)
         if any((
             buffer_value["name"] != storage_values[contact_id]["name"],
             buffer_value["phone"] != storage_values[contact_id]["phone"],
@@ -151,9 +155,13 @@ def save_changes():
     with open(STORAGE, 'w') as storage:
         json.dump(contacts_buffer, storage)
 
-
-with open(STORAGE, 'r') as storage:
-    contacts_buffer = json.load(storage)
+contacts_buffer = {}
+if os.path.isfile(STORAGE):
+    with open(STORAGE, 'r') as storage:
+        contacts_buffer = json.load(storage)
+else:
+    with open(STORAGE, 'w') as storage:
+        json.dump({}, storage)
 
 
 command = None
