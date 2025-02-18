@@ -3,7 +3,7 @@
 ## Запуск
 
 ```shell
-python controller.py
+python main.py
 ```
 
 ## Доступные команды

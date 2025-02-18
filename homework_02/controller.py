@@ -188,8 +188,3 @@ class PhonebookController:
             save = InputView.ask_to_save_changes() or Choices.DEFAULT
             if save == Choices.YES:
                 self.phonebook.save()
-
-
-if __name__ == "__main__":
-    phonebook = PhonebookController()
-    phonebook.run()
