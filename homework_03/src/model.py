@@ -89,12 +89,17 @@ class JsonStorage:
     def add_to_cache(self, value: Contact):
         self._cache[value.id] = value
 
+    def _next_cache_id(self) -> int:
+        """Returns next contact id or 1 if there are no contacts."""
+        if not self._cache:
+            return 1
+        return int(max(self._cache.keys())) + 1
+
 
 class PhonebookModel(JsonStorage):
     """Represents data and business logic of Phonebook."""
 
     def __init__(self):
-        self._cache = {}
         super().__init__()
 
     def add_contact(self, name: str, phone: str, comment: str = None) -> Contact:
@@ -110,9 +115,8 @@ class PhonebookModel(JsonStorage):
         Delete contact from the phonebook.
         :param id_: contact ID
         """
-        if id_ not in self._cache:
-            return
-        self._cache.pop(id_)
+        if id_ in self._cache:
+            self._cache.pop(id_)
 
     def find_contacts(self, search: str) -> List[Contact]:
         """Returns contacts that satisfy search."""
@@ -122,21 +126,14 @@ class PhonebookModel(JsonStorage):
 
     def get(self, id_: int) -> Contact:
         """Return contact via its ID."""
-        contact = self._cache.get(id_)
-        if not contact:
+        if id_ not in self._cache:
             raise ContactNotFound(id_)
-        return contact
+        return self._cache[id_]
 
     def contacts(self) -> Generator[Contact, None, None]:
         """Return contacts one by one."""
         for contact in self._cache.values():
             yield contact
-
-    def _next_cache_id(self) -> int:
-        """Returns next contact id or 1 if there are no contacts."""
-        if not self._cache:
-            return 1
-        return int(max(self._cache.keys())) + 1
 
     def has_unsaved_changes(self) -> bool:
         """Returns True if there are unsaved changes in the cache."""

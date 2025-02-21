@@ -4,8 +4,8 @@ from string import ascii_letters
 from src.model import Contact
 
 
-def generate_random_id() -> int:
-    return randint(1, 100_000)
+def generate_random_id(from_: int = 1, to: int = 100_000) -> int:
+    return randint(from_, to)
 
 
 def generate_unique_ids(how_many: int = 10):
@@ -59,6 +59,13 @@ def generate_different_string(*args):
         result = generate_random_string(length=min_len)
         if not any((result in s for s in args)):
             return result
+
+
+def generate_different_id(*args):
+    while True:
+        id_ = generate_random_id()
+        if id_ not in args:
+            return id_
 
 
 def generate_contacts_storage(how_many: int = 10):

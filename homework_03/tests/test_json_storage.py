@@ -8,21 +8,20 @@ from .utils import generate_contacts_storage, generate_contact, generate_contact
 
 class TestStorageCreation(unittest.TestCase):
     def setUp(self):
-        self.storage = "phonebook.json"
-        if os.path.exists(self.storage):
-            os.remove(self.storage)
+        if os.path.exists(JsonStorage.STORAGE):
+            os.remove(JsonStorage.STORAGE)
 
     def tearDown(self):
-        if os.path.exists(self.storage):
-            os.remove(self.storage)
+        if os.path.exists(JsonStorage.STORAGE):
+            os.remove(JsonStorage.STORAGE)
 
     def test_file_created(self):
-        JsonStorage()
-        self.assertTrue(os.path.exists(self.storage))
+        storage = JsonStorage()
+        self.assertTrue(os.path.exists(storage.STORAGE))
 
     def test_file_init_structure(self):
-        JsonStorage()
-        with open(self.storage, "r") as file:
+        storage = JsonStorage()
+        with open(storage.STORAGE, "r") as file:
             data = json.load(file)
             self.assertListEqual([], data)
 
@@ -124,6 +123,28 @@ class TestRawStorage(unittest.TestCase):
         raw_data = storage.raw_storage()
         for expected, real in zip(self.storage_contacts, raw_data):
             self.assertDictEqual(expected, real)
+
+
+class TestNextCacheId(unittest.TestCase):
+    def tearDown(self):
+        if os.path.exists(JsonStorage.STORAGE):
+            os.remove(JsonStorage.STORAGE)
+
+    def test_empty_cache(self):
+        storage = JsonStorage()
+        id_ = storage._next_cache_id()
+        first_id = 1
+        self.assertEqual(first_id, id_)
+
+    def test_filled_cache(self):
+        storage = JsonStorage()
+        ids = set()
+        for contact in generate_contacts(how_many=10):
+            storage.add_to_cache(contact)
+            ids.add(contact.id)
+        expected_id = max(ids) + 1
+        real_id = storage._next_cache_id()
+        self.assertEqual(expected_id, real_id)
 
 
 if __name__ == "__main__":
