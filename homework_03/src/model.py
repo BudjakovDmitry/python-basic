@@ -53,33 +53,41 @@ class Contact:
         """Clear contact's comment"""
         self.comment = None
 
+    def as_dict(self):
+        return self.__dict__
+
 
 class JsonStorage:
     """Represents json-based file storage of the Phonebook."""
 
+    STORAGE = "phonebook.json"
+
     def __init__(self):
-        self.STORAGE = "phonebook.json"
+        self._cache = {}
 
         # create file if needed or load data from existing file
         if os.path.isfile(self.STORAGE):
             with open(self.STORAGE, "r") as storage:
-                for row in json.load(storage).values():
+                for row in json.load(storage):
+                    row["id_"] = row.pop("id")  # replace key "id_" to "id"
                     contact = Contact(**row)
-                    self._cache[contact.id_] = contact
+                    self._cache[contact.id] = contact
         else:
             with open(self.STORAGE, "w") as storage:
-                json.dump({}, storage)
+                json.dump([], storage)
 
     def save(self):
         """Save contacts to the file storage."""
-        cache_as_json = {id_: contact.__dict__ for id_, contact in self._cache.items()}
         with open(self.STORAGE, "w") as storage:
-            json.dump(cache_as_json, storage)
+            json.dump([contact.as_dict() for contact in self._cache.values()], storage)
 
     def raw_storage(self) -> dict:
         """Returns raw storage data."""
         with open(self.STORAGE, "r") as file:
             return json.load(file)
+
+    def add_to_cache(self, value: Contact):
+        self._cache[value.id] = value
 
 
 class PhonebookModel(JsonStorage):
@@ -94,7 +102,7 @@ class PhonebookModel(JsonStorage):
         contact_id = self._next_cache_id()
 
         contact = Contact(id_=contact_id, name=name, phone=phone, comment=comment)
-        self._cache[contact_id] = contact
+        super().add_to_cache(contact)
         return contact
 
     def delete_contact(self, id_: int):
